@@ -8,10 +8,10 @@ class MaintenanceService {
     this.timeToMaintenance = -1
   }
 
-  async create (time) {
-    console.log("thsi is being called with time: ", time)
+  async create (data) {
+    console.log("this is being called with time: ", data.time)
     //send a time after which maintenance will start
-    this.timeToMaintenance = time
+    this.timeToMaintenance = data.time
 
     return this.timeToMaintenance
   }
@@ -47,3 +47,7 @@ app.publish(data => app.channel('everybody'));
 app.listen(3030).on('listening', () =>
   console.log('Feathers server listening on localhost:3030')
 );
+
+app.service('maintenanceService').create({
+  time: 5
+});

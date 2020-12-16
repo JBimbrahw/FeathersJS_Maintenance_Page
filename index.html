@@ -6,12 +6,15 @@
 <link rel="stylesheet" href="//unpkg.com/feathers-chat@4.0.0/public/base.css">
     <link rel="stylesheet" href="//unpkg.com/feathers-chat@4.0.0/public/chat.css">
 </head>
-<body>
+<body id="pageBody">
   <main id="main" class="container">
-    <h1>Welcome to Feathers</h1>
+    <h1>Home Page</h1>
       <button onclick="goToAdminPage()" class="button button-primary">Go To the Admin Page</button>
     </form>
   </main>
+
+  <br>
+  <p style ="font-size: xx-large;" id="placeholder"></p>
 
   <script src="//unpkg.com/@feathersjs/client@^4.3.0/dist/feathers.js"></script>
   <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
@@ -26,8 +29,18 @@
 
     //left off here
     function redirect (timeToMaintenance) {
-      console.log(timeToMaintenance)
-      document.getElementById('main').innerHTML += `<p style="font-size: xx-large;>${timeToMaintenance}</p>`;
+      console.log("The time to maintenance is: ", timeToMaintenance)
+
+      let displayText = "The time to maintenance is: " + timeToMaintenance + " minutes"
+
+      document.getElementById("placeholder").innerHTML = displayText
+
+      let url = 'https://avatarfiles.alphacoders.com/822/82242.png';
+
+      let image = new Image();
+      image.src = './Goodbye.jpg';
+
+      document.getElementById("pageBody").appendChild(image)
     }
 
     const main = async () => {
