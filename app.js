@@ -2,56 +2,19 @@ const feathers = require('@feathersjs/feathers');
 const express = require('@feathersjs/express');
 const socketio = require('@feathersjs/socketio');
 
-// A usernames service that allows to create new
-// and return all existing usernames
-class usernameService {
+
+class MaintenanceService {
   constructor() {
-    this.usernames = []
-    this.path = ""
+    this.timeToMaintenance = -1
   }
 
-  async find () {
-    // Just return all our usernames
-    return this.usernames;
+  async create (time) {
+    console.log("thsi is being called with time: ", time)
+    //send a time after which maintenance will start
+    this.timeToMaintenance = time
+
+    return this.timeToMaintenance
   }
-
-  async create (data) {
-    console.log("calling create")
-
-    // The new username is the data merged with a unique identifier
-    // using the usernames length since it changes whenever we add one
-    const username = {
-      id: this.usernames.length,
-      text: data.text
-    }
-
-    // Add new username to the list
-    this.usernames.push(username);
-
-    return username;
-  }
-
-  async remove (id) {
-    // remove a user from the list
-    for(let i = 0; i < this.usernames.length; i++)
-    {
-      if(this.usernames[i].id == id) {
-        this.usernames.splice(i,1)
-
-        //and now on the client side, remove the user
-
-        return true
-      }
-    }
-    return false
-  }
-
-  async update (id, data) {
-    this.path = (data.path)
-
-
-  }
-
 
 }
 
@@ -68,8 +31,8 @@ app.use(express.static(__dirname));
 app.configure(express.rest());
 // Configure Socket.io real-time APIs
 app.configure(socketio());
-// Register an in-memory usernames service
-app.use('/usernames', new usernameService());
+// Register an in-memory maintenanceService service
+app.use('/maintenanceService', new MaintenanceService());
 // Register a nicer error handler than the default Express one
 app.use(express.errorHandler());
 
@@ -84,9 +47,3 @@ app.publish(data => app.channel('everybody'));
 app.listen(3030).on('listening', () =>
   console.log('Feathers server listening on localhost:3030')
 );
-
-// For good measure let's create a username
-// So our API doesn't look so empty
-// app.service('usernames').create({
-//   text: 'Hello world from the server'
-// });

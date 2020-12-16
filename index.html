@@ -9,21 +9,7 @@
 <body>
   <main id="main" class="container">
     <h1>Welcome to Feathers</h1>
-    <form class="form" onsubmit="sendusername(event.preventDefault())">
-      <input type="text" id="username-text" placeholder="Enter your user name here">
-      <button type="submit" class="button button-primary">Submit UserName</button>
       <button onclick="goToAdminPage()" class="button button-primary">Go To the Admin Page</button>
-
-      <p id="userID">Your user id is: </p>
-      <p id="userName">Your user name is: </p>
-
-      <label for="usernames">Choose a User to kick out:</label>
-      <select name="users" id="userlist">
-        <option value=" "></option>
-      </select>
-      <button id="goodbye" onclick="removeUser(event.preventDefault())" class="button button-primary">Remove User</button>
-
-
     </form>
   </main>
 
@@ -38,66 +24,15 @@
     // Register socket.io to talk to our server
     app.configure(feathers.socketio(socket));
 
-    // Form submission handler that sends a new username
-    async function sendusername () {
-      console.log("sendusername called")
-      const usernameInput = document.getElementById('username-text');
-
-      // Create a new username with the input field value
-      await app.service('usernames').create({
-        text: usernameInput.value
-      });
-
-      usernameInput.value = '';
-    }
-
-    // Renders a single username on the page
-    function addusername (username) {
-      console.log("adduserName called")
-      if(username) {
-        document.getElementById('userID').innerHTML = "Your user id is: " + username.id;
-        document.getElementById('userName').innerHTML = "Your user name is: " + username.text;
-      }
-
-      //populate the dropdown
-      let select = document.getElementById("userlist")
-      let el = document.createElement("option");
-      el.textContent = username.text;
-      el.value = username.id;
-      select.appendChild(el);
-
-      //save the username to session storage
-      sessionStorage.setItem("thisUser", username.text)
-
-    }
-
     //left off here
-    function redirect (id, data) {
-      console.log(data.path)
-      window.location.href = data.path
-    }
-
-    // Form submission handler that removes a user
-    async function removeUser () {
-      const selectmenu = document.getElementById('userlist')
-      let userToRemoveId = selectmenu.options[selectmenu.selectedIndex].value
-      let userToRemoveName = selectmenu.options[selectmenu.selectedIndex].textContent
-      await app.service('usernames').remove(userToRemoveId)
-
-      console.log("Just called removeuser")
+    function redirect (timeToMaintenance) {
+      console.log(timeToMaintenance)
+      document.getElementById('main').innerHTML += `<p style="font-size: xx-large;>${timeToMaintenance}</p>`;
     }
 
     const main = async () => {
-      // Find all existing usernames
-      const usernames = await app.service('usernames').find();
-
-      console.log("This is being called to add user names")
-      usernames.forEach(addusername)
-      // Add any newly created username to the list in real-time
-
       //This ties a feathers service call to an event on this page
-      app.service('usernames').on('created', addusername);
-      app.service('usernames').on('updated', redirect);
+      app.service('maintenanceService').on('created', redirect);
     };
 
     goToAdminPage = () => {
