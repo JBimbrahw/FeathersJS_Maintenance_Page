@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Feathers Example</title>
+<link rel="stylesheet" href="//unpkg.com/feathers-chat@4.0.0/public/base.css">
+    <link rel="stylesheet" href="//unpkg.com/feathers-chat@4.0.0/public/chat.css">
+</head>
+<body>
+  <main id="main" class="container">
+    <h1>Welcome to Feathers</h1>
+    <form class="form" onsubmit="sendusername(event.preventDefault())">
+      <input type="text" id="username-text" placeholder="Enter your user name here">
+      <button type="submit" class="button button-primary">Submit UserName</button>
+      <button onclick="goToAdminPage()" class="button button-primary">Go To the Admin Page</button>
+
+      <p id="userID">Your user id is: </p>
+      <p id="userName">Your user name is: </p>
+
+      <label for="usernames">Choose a User to kick out:</label>
+      <select name="users" id="userlist">
+        <option value=" "></option>
+      </select>
+      <button id="goodbye" onclick="removeUser(event.preventDefault())" class="button button-primary">Remove User</button>
+
+
+    </form>
+  </main>
+
+  <script src="//unpkg.com/@feathersjs/client@^4.3.0/dist/feathers.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+  <script type="text/javascript">
+    // Set up socket.io
+    const socket = io('http://localhost:3030');
+    // Initialize a Feathers app
+    const app = feathers();
+
+    // Register socket.io to talk to our server
+    app.configure(feathers.socketio(socket));
+
+    // Form submission handler that sends a new username
+    async function sendusername () {
+      console.log("sendusername called")
+      const usernameInput = document.getElementById('username-text');
+
+      // Create a new username with the input field value
+      await app.service('usernames').create({
+        text: usernameInput.value
+      });
+
+      usernameInput.value = '';
+    }
+
+    // Renders a single username on the page
+    function addusername (username) {
+      console.log("adduserName called")
+      if(username) {
+        document.getElementById('userID').innerHTML = "Your user id is: " + username.id;
+        document.getElementById('userName').innerHTML = "Your user name is: " + username.text;
+      }
+
+      //populate the dropdown
+      let select = document.getElementById("userlist")
+      let el = document.createElement("option");
+      el.textContent = username.text;
+      el.value = username.id;
+      select.appendChild(el);
+
+      //save the username to session storage
+      sessionStorage.setItem("thisUser", username.text)
+
+    }
+
+    //left off here
+    function redirect (id, data) {
+      console.log(data.path)
+      window.location.href = data.path
+    }
+
+    // Form submission handler that removes a user
+    async function removeUser () {
+      const selectmenu = document.getElementById('userlist')
+      let userToRemoveId = selectmenu.options[selectmenu.selectedIndex].value
+      let userToRemoveName = selectmenu.options[selectmenu.selectedIndex].textContent
+      await app.service('usernames').remove(userToRemoveId)
+
+      console.log("Just called removeuser")
+    }
+
+    const main = async () => {
+      // Find all existing usernames
+      const usernames = await app.service('usernames').find();
+
+      console.log("This is being called to add user names")
+      usernames.forEach(addusername)
+      // Add any newly created username to the list in real-time
+
+      //This ties a feathers service call to an event on this page
+      app.service('usernames').on('created', addusername);
+      app.service('usernames').on('updated', redirect);
+    };
+
+    goToAdminPage = () => {
+      window.location.href = "./admin.html"
+    }
+
+    main();
+  </script>
+</body>
+</html>
